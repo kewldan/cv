@@ -1,16 +1,33 @@
-# This is a sample Python script.
+import asyncio
+import logging
+import os
+from contextlib import suppress
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import uvicorn
+
+import database
+from config import config
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+async def main():
+    await database.connect()
 
+    server_config = uvicorn.Config(
+        "server:app",
+        host="0.0.0.0",
+        port=config.server_port,
+        use_colors=True,
+        log_level="info",
+        server_header=False,
+    )
+    server = uvicorn.Server(server_config)
 
-# Press the green button in the gutter to run the script.
+    await server.serve()
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    logging.getLogger("pymongo").setLevel(logging.WARNING)
+    logging.basicConfig(level=logging.DEBUG if config.debug else logging.WARNING)
+    os.makedirs('data', exist_ok=True)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    with suppress(KeyboardInterrupt):
+        asyncio.run(main())
