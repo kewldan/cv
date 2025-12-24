@@ -1,0 +1,14 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aiohttp[speedups]>=3.13.2",
+    "beanie>=2.0.1",
+    "fastapi[standard]>=0.127.0",
+    "pydantic>=2.12.5",
+    "pymongo>=4.15.5",
+    "uvicorn>=0.40.0",
+]
