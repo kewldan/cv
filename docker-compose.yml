@@ -30,7 +30,7 @@ services:
     build: ./backend
     restart: unless-stopped
     networks:
-      - backend
+      - backends
     volumes:
       - ./data:/usr/app/data
     expose:
