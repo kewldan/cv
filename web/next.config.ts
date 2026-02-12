@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  reactCompiler: true,
   devIndicators: false,
   async rewrites() {
     return {
