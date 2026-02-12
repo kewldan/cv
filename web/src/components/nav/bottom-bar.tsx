@@ -28,20 +28,28 @@ export default function BottomBar() {
   const pathname = usePathname()
 
   return (
-    <div className='fixed bottom-4 rounded-full backdrop-blur-2xl border bg-white/4 border-white/10 p-1 left-3 w-[calc(100vw-1.5rem)] flex gap-2 justify-between'>
-      {routes.map((item) => (
-        <Link
-          href={item.href}
-          className={cn(
-            'bg-transparent rounded-full text-white/70 flex flex-col gap-0.5 w-full text-[10px] items-center py-1 px-4 font-medium transition-colors',
-            pathname === item.href && 'bg-neutral-400/30 text-white',
-          )}
-          key={item.href}
-        >
-          {item.icon}
-          {item.name}
-        </Link>
-      ))}
+    <div className='fixed bottom-3 rounded-full backdrop-blur-2xl border bg-white/4 border-white/10 p-1 left-3 w-[calc(100vw-1.5rem)]'>
+      <div className='relative flex gap-2 justify-between'>
+        <div
+          className='absolute top-0 h-full w-1/3 z-20 transition-all rounded-full bg-neutral-400/30'
+          style={{
+            left: `${routes.findIndex((item) => item.href === pathname) * 33.33}%`,
+          }}
+        />
+        {routes.map((item) => (
+          <Link
+            href={item.href}
+            className={cn(
+              'bg-transparent rounded-full text-white/50 flex flex-col gap-0.5 w-full text-[10px] items-center py-1 px-4 font-medium transition-colors z-30',
+              pathname === item.href && 'text-white',
+            )}
+            key={item.href}
+          >
+            {item.icon}
+            {item.name}
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }
