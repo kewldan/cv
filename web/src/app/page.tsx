@@ -67,8 +67,6 @@ export default function Page() {
     )
   }, [subjectsData])
 
-  console.log(dataForSaving)
-
   return (
     <div className='flex flex-col items-center p-4 gap-3'>
       <div className='flex items-center gap-3 justify-between bg-card border-border w-full p-4 rounded-xl border'>
