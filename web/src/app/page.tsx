@@ -1,33 +1,78 @@
-import { differenceInCalendarDays, format } from 'date-fns'
+'use client'
+
+import { openTelegramLink } from '@telegram-apps/sdk'
+import { cloudStorage, hapticFeedback } from '@telegram-apps/sdk-react'
+import {
+  differenceInBusinessDays,
+  differenceInCalendarDays,
+  differenceInWeeks,
+  format,
+} from 'date-fns'
 import {
   ArrowRight,
   Calendar,
   Crown,
-  Leaf,
   Sprout,
-  TrendingDown,
+  TrendingUp,
   Wand2,
 } from 'lucide-react'
+import { useMemo } from 'react'
+import CurrentActivity from '@/app/current-acitivity'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { calculateAverage, useSubjectsData } from '@/features/subjects'
+import { useTimetable } from '@/features/timetable'
+import { countDays, end, start } from '@/lib/utils'
 
-const weekend = new Date(2026, 3, 21)
+const weekend = new Date('2026-03-27')
 
 export default function Page() {
   const leftBeforeWeekend = differenceInCalendarDays(weekend, new Date())
+  const { subjects: subjectsData, setSubjects } = useSubjectsData()
+  const averageGrades = subjectsData
+    .filter((item) => item.grades.length > 0)
+    .map((item) => calculateAverage(item.grades))
+  const avg =
+    averageGrades.reduce((p, item) => item + p, 0) / averageGrades.length
+
+  const { timetable } = useTimetable()
+
+  const lessons =
+    timetable.flat().reduce((p, c) => p + (c !== null ? 1 : 0), 0) *
+    differenceInWeeks(end, start)
+
+  let pastLessons = 0
+
+  for (let dayIndex = 0; dayIndex < 5; dayIndex++) {
+    pastLessons +=
+      timetable[dayIndex].filter((item) => item !== null).length *
+      countDays(start, new Date(), dayIndex + 1)
+  }
+
+  const totalMissed = subjectsData.reduce((p, item) => p + item.missed, 0)
+
+  const visited = pastLessons - totalMissed
+
+  const dataForSaving = useMemo(() => {
+    return JSON.stringify(
+      subjectsData.map((item) => ({
+        id: item.id,
+        m: item.missed,
+        grades: item.grades.map((grade) => ({
+          v: grade.value,
+          m: grade.multiplier,
+          t: grade.timestamp,
+        })),
+      })),
+    )
+  }, [subjectsData])
+
+  console.log(dataForSaving)
 
   return (
     <div className='flex flex-col items-center p-4 gap-3'>
       <div className='flex items-center gap-3 justify-between bg-card border-border w-full p-4 rounded-xl border'>
-        <div className='flex items-center gap-3'>
-          <div className='size-10 rounded-full flex items-center justify-center shrink-0'>
-            <Leaf size={32} />
-          </div>
-          <div>
-            <p className='text-sm text-muted-foreground'>Текущая активность</p>
-            <h3 className='text-lg font-semibold'>Отдых</h3>
-          </div>
-        </div>
+        <CurrentActivity />
         <div className='text-right'>
           <p className='text-2xl font-bold'>{format(new Date(), 'HH:mm')}</p>
         </div>
@@ -39,21 +84,25 @@ export default function Page() {
             Посещаемость
           </div>
           <div className='flex flex-col gap-1'>
-            <p className='font-bold text-2xl'>34%</p>
+            <p className='font-bold text-2xl'>
+              {((visited / lessons) * 100).toPrecision(3)}%
+            </p>
             <Progress
-              value={34}
+              value={(visited / lessons) * 100}
               indicatorClassName='bg-linear-to-r from-orange-300 opacity-80 to-orange-500 rounded-full'
             />
           </div>
-          <p className='text-orange-500 text-xs'>48/64 уроков</p>
+          <p className='text-orange-500 text-xs'>
+            {visited}/{lessons} уроков
+          </p>
         </div>
         <div className='flex flex-col gap-3 bg-card border-border w-full p-4 rounded-xl border'>
           <div className='flex items-center gap-1 text-xs font-medium'>
-            <TrendingDown size={16} className='text-green-500' />
+            <TrendingUp size={16} className='text-green-500' />
             Средний балл
           </div>
           <div className='flex flex-col gap-1'>
-            <p className='font-bold text-2xl'>4.13</p>
+            <p className='font-bold text-2xl'>{avg.toPrecision(3)}</p>
             <Progress
               value={83}
               indicatorClassName='bg-linear-to-r from-green-300 opacity-80 to-green-500 rounded-full'
@@ -68,7 +117,14 @@ export default function Page() {
           Окончание второго полугодия
         </div>
         <div className='flex flex-col gap-1'>
-          <p className='font-bold text-2xl'>27%</p>
+          <p className='font-bold text-2xl'>
+            {(
+              (differenceInBusinessDays(new Date(), start) /
+                differenceInBusinessDays(end, start)) *
+              100
+            ).toPrecision(2)}
+            %
+          </p>
           <Progress
             value={27}
             indicatorClassName='bg-linear-to-r from-neutral-100 to-neutral-300 rounded-full'
@@ -90,7 +146,7 @@ export default function Page() {
         </div>
         <p className='text-2xl font-bold'>{leftBeforeWeekend}</p>
       </div>
-      <div className='flex gap-3 flex-col justify-between bg-card border-border w-full p-4 rounded-xl border'>
+      <div className='flex gap-3 flex-col justify-between bg-card border-border w-full p-4 rounded-xl border opacity-35'>
         <div className='flex items-center gap-3'>
           <div className='size-10 flex items-center justify-center shrink-0'>
             <Wand2 size={32} />
@@ -108,6 +164,75 @@ export default function Page() {
           Читать полностью
           <ArrowRight />
         </Button>
+      </div>
+      <div className='flex flex-col gap-2 justify-between bg-card border-border w-full p-4 rounded-xl border text-xs text-muted-foreground'>
+        <div className='flex items-center justify-between'>
+          <button
+            type='button'
+            onClick={() => {
+              openTelegramLink('https://t.me/kewldan')
+            }}
+          >
+            by @kwldn with {'<3'}
+          </button>
+          <div className='flex gap-1'>
+            <Button
+              size='sm'
+              variant='outline'
+              onClick={() => {
+                cloudStorage
+                  .setItem('subjects-storage', dataForSaving)
+                  .then(() => {
+                    hapticFeedback.impactOccurred('soft')
+                  })
+                  .catch(() => {
+                    hapticFeedback.impactOccurred('heavy')
+                  })
+              }}
+            >
+              Экспорт
+            </Button>
+            <Button
+              size='sm'
+              variant='outline'
+              onClick={() => {
+                cloudStorage
+                  .getItem('subjects-storage')
+                  .then((item) => {
+                    if (item) {
+                      const data = JSON.parse(item)
+                      setSubjects(
+                        data.map((j: any) => ({
+                          id: j.id,
+                          missed: j.m,
+                          grades: j.grades.map((i: any) => ({
+                            value: i.v,
+                            multiplier: i.m,
+                            timestamp: i.t,
+                            id: crypto.randomUUID(),
+                          })),
+                        })),
+                      )
+                    }
+                  })
+                  .then(() => {
+                    hapticFeedback.impactOccurred('soft')
+                  })
+                  .catch(() => {
+                    hapticFeedback.impactOccurred('heavy')
+                  })
+              }}
+            >
+              Импорт
+            </Button>
+          </div>
+        </div>
+        <div className='flex items-center gap-2'>
+          <span>
+            {dataForSaving.length}/{4096}
+          </span>
+          <Progress value={(dataForSaving.length / 4096) * 100} />
+        </div>
       </div>
     </div>
   )

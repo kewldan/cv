@@ -1,9 +1,9 @@
-import { useRef } from 'react';
+import { useRef } from 'react'
 
 export function useClientOnce(fn: () => void): void {
-  const canCall = useRef<boolean>(true);
+  const canCall = useRef<boolean>(true)
   if (typeof window !== 'undefined' && canCall.current) {
-    canCall.current = false;
-    fn();
+    canCall.current = false
+    fn()
   }
 }

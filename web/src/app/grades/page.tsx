@@ -4,16 +4,7 @@ import { Trophy } from 'lucide-react'
 import SubjectCard from '@/app/grades/subject'
 import { Accordion } from '@/components/ui/accordion'
 import { calculateAverage, useSubjectsData } from '@/features/subjects'
-
-function mapNumber(
-  value: number,
-  inMin: number,
-  inMax: number,
-  outMin: number,
-  outMax: number,
-): number {
-  return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
-}
+import { mapNumber } from '@/lib/utils'
 
 export default function Page() {
   const { subjects: subjectsData } = useSubjectsData()

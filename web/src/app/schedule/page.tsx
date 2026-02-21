@@ -22,39 +22,37 @@ export default function Page() {
   const { timetable } = useTimetable()
 
   return (
-    <div>
-      <Carousel
-        opts={{
-          loop: true,
-        }}
-      >
-        <CarouselContent>
-          {timetable.map((day, i) => (
-            <CarouselItem key={i} className='flex flex-col items-center w-full'>
-              <div className='flex flex-col gap-2 w-full p-4 font-medium'>
-                <p className='border backdrop-blur-2xl rounded-full bg-black/40 border-white/10 py-1 select-none px-4 w-full text-center font-bold'>
-                  {['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'][i]}
-                </p>
-                <div className='flex flex-col gap-2 px-4 w-full text-sm'>
-                  {day.map((item, j) => (
-                    <div
-                      key={j}
-                      className='border backdrop-blur-2xl rounded-full bg-black/30 border-white/10 text-white/80 py-1 select-none px-4 flex items-center justify-between'
-                    >
-                      <div>
-                        {j + 1}. {item ? subjects[item].name : '-'}
-                      </div>
-                      <span className='text-white/50 font-medium text-xs'>
-                        {arr[j]}
-                      </span>
+    <Carousel
+      opts={{
+        loop: true,
+      }}
+    >
+      <CarouselContent>
+        {timetable.map((day, i) => (
+          <CarouselItem key={i} className='flex flex-col items-center w-full'>
+            <div className='flex flex-col gap-2 w-full p-4 font-medium'>
+              <p className='border backdrop-blur-2xl rounded-full bg-black/40 border-white/10 py-1 select-none px-4 w-full text-center font-bold'>
+                {['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'][i]}
+              </p>
+              <div className='flex flex-col gap-2 px-4 w-full text-sm'>
+                {day.map((item, j) => (
+                  <div
+                    key={j}
+                    className='border backdrop-blur-2xl rounded-full bg-black/10 border-white/10 text-white/95 py-1 select-none px-4 flex items-center justify-between'
+                  >
+                    <div>
+                      {j + 1}. {item ? subjects[item].name : '-'}
                     </div>
-                  ))}
-                </div>
+                    <span className='text-white/70 font-medium text-xs'>
+                      {arr[j]}
+                    </span>
+                  </div>
+                ))}
               </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-    </div>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+    </Carousel>
   )
 }

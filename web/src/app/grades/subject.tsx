@@ -1,4 +1,3 @@
-import { differenceInWeeks } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { subjects } from '@/app/grades/subjects'
 import {
@@ -9,60 +8,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { type SubjectData, useSubjectsData } from '@/features/subjects'
-import { useTimetable } from '@/features/timetable'
-
-const requiredGrades: Record<number, number> = {
-  1: 6,
-  2: 10,
-  3: 14,
-}
-
-function countDays(startDate: Date, endDate: Date, index: number): number {
-  let count = 0
-  const current = new Date(startDate.getTime())
-  const end = new Date(endDate.getTime())
-
-  current.setHours(0, 0, 0, 0)
-  end.setHours(0, 0, 0, 0)
-
-  while (current <= end) {
-    if (current.getDay() === index) {
-      count++
-    }
-
-    current.setDate(current.getDate() + 1)
-  }
-
-  return count
-}
-
-const start = new Date('2026-01-12')
-const end = new Date('2026-05-22')
+import useLesson from '@/hooks/useLesson'
 
 export default function SubjectCard({ item }: { item: SubjectData }) {
   const { setSubjects, subjects: subjectsData } = useSubjectsData()
-  const { timetable } = useTimetable()
-  const lessonsWeek = timetable.map(
-    (day) => day.filter((j) => j === item.id).length,
-  )
-  const lessonWeekTotal = lessonsWeek.reduce(
-    (previousValue, currentValue) => previousValue + currentValue,
-    0,
-  )
-
-  const requiredGrade = requiredGrades[Math.min(lessonWeekTotal, 3)]
-  const requiredVisits = Math.ceil(
-    differenceInWeeks(end, start) * lessonWeekTotal * 0.4,
-  )
-
-  let pastLessons = 0
-
-  for (let dayIndex = 0; dayIndex < 5; dayIndex++) {
-    pastLessons +=
-      lessonsWeek[dayIndex] * countDays(start, new Date(), dayIndex + 1)
-  }
-
-  const visits = pastLessons - item.missed
+  const data = useLesson(item.id)
 
   return (
     <AccordionItem
@@ -77,14 +27,14 @@ export default function SubjectCard({ item }: { item: SubjectData }) {
           <p className='font-medium'>{subjects[item.id].name}</p>
           <Progress
             value={Math.min(
-              (visits / requiredVisits) * 100,
-              (item.grades.length / requiredGrade) * 100,
+              (data.visits / data.requiredVisits) * 100,
+              (data.grades / data.requiredGrades) * 100,
               100,
             )}
           />
           <p className='text-[10px] text-muted-foreground'>
-            {visits}/{requiredVisits} посещений • {item.grades.length}/
-            {requiredGrade} оценок
+            {data.visits}/{data.requiredVisits} посещений • {data.grades}/
+            {data.requiredGrades} оценок
           </p>
         </div>
         <p className='text-2xl font-semibold text-nowrap'>
@@ -152,7 +102,7 @@ export default function SubjectCard({ item }: { item: SubjectData }) {
                                   multiplier: 1,
                                   value: i + 2,
                                   id: crypto.randomUUID(),
-                                  timestamp: Date.now(),
+                                  timestamp: Math.floor(Date.now() / 1000),
                                 },
                               ],
                             }
@@ -198,7 +148,7 @@ export default function SubjectCard({ item }: { item: SubjectData }) {
                 className='size-8'
                 variant='outline'
                 onClick={() => {
-                  if (item.missed >= pastLessons) return
+                  if (item.missed >= data.pastLessons) return
                   setSubjects(
                     subjectsData.map((j) =>
                       j.id === item.id

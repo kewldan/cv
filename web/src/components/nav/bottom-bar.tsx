@@ -1,5 +1,6 @@
 'use client'
 
+import { hapticFeedback } from '@telegram-apps/sdk-react'
 import { GraduationCap, Home, LibraryBig } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -43,6 +44,9 @@ export default function BottomBar() {
               'bg-transparent rounded-full text-white/50 flex flex-col gap-0.5 w-full text-[10px] items-center py-1 px-4 font-medium transition-colors z-30',
               pathname === item.href && 'text-white',
             )}
+            onClick={() => {
+              hapticFeedback.impactOccurred('medium')
+            }}
             key={item.href}
           >
             {item.icon}
