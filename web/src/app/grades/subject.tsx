@@ -14,6 +14,8 @@ export default function SubjectCard({ item }: { item: SubjectData }) {
   const { setSubjects, subjects: subjectsData } = useSubjectsData()
   const data = useLesson(item.id)
 
+  const avg = item.grades.reduce((p, a) => p + a.value, 0) / item.grades.length
+
   return (
     <AccordionItem
       value={item.id}
@@ -38,11 +40,7 @@ export default function SubjectCard({ item }: { item: SubjectData }) {
           </p>
         </div>
         <p className='text-2xl font-semibold text-nowrap'>
-          {item.grades.length > 0
-            ? item.grades
-                .reduce((p, a) => (p + a.value) / 2, item.grades[0]?.value ?? 1)
-                .toFixed(2)
-            : 'Н/А'}
+          {item.grades.length > 0 ? avg.toFixed(2) : 'Н/А'}
         </p>
       </AccordionTrigger>
       <AccordionContent>
