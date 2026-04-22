@@ -9,7 +9,6 @@ services:
       - virtual-hosts
     depends_on:
       - web
-      - api
     labels:
       - traefik.http.routers.kewldan-web.rule=Host(`kewldan.ru`)
       - traefik.enable=true
