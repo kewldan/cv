@@ -25,16 +25,6 @@ services:
       - backends
     expose:
       - 80
-  api:
-    hostname: 'kewldan-api'
-    build: ./backend
-    restart: unless-stopped
-    networks:
-      - backends
-    volumes:
-      - ./data:/usr/app/data
-    expose:
-      - 80
 
 
 networks:
